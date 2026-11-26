@@ -9,14 +9,14 @@
 :root{
   --bg:#f5f6f8; --card:#ffffff; --tx:#1d2330; --tx2:#5b6475; --linha:#e3e6ec;
   --pri:#1f5f99; --pri-tx:#fff; --ok:#1e7a46; --ok-bg:#e4f4ea; --av:#8a5a00; --av-bg:#fff4d6;
-  --er:#b3261e; --er-bg:#fde7e6; --ev:#6b3fa0; --ev-bg:#f1eafa; --sel:#0f7b6c; --sel-bg:#e2f5f1;
+  --er:#b3261e; --er-bg:#fde7e6; --ev:#6b3fa0; --ev-bg:#f1eafa; --am:#f2c230; --am-tx:#2a2000; --sel:#0f7b6c; --sel-bg:#e2f5f1;
   --muted-bg:#eef0f4;
 }
 @media (prefers-color-scheme: dark){
   :root{
     --bg:#14171d; --card:#1d2129; --tx:#e7e9ee; --tx2:#a3abba; --linha:#2d333e;
     --pri:#5aa2e0; --pri-tx:#0d1117; --ok:#6fd39a; --ok-bg:#183626; --av:#f0c060; --av-bg:#3a2e12;
-    --er:#ff8a80; --er-bg:#3d1a19; --ev:#c3a3ee; --ev-bg:#2c2140; --sel:#5ed6c2; --sel-bg:#143631;
+    --er:#ff8a80; --er-bg:#3d1a19; --ev:#c3a3ee; --ev-bg:#2c2140; --am:#f0c95a; --am-tx:#1d1600; --sel:#5ed6c2; --sel-bg:#143631;
     --muted-bg:#262b35;
   }
 }
@@ -78,11 +78,12 @@ input,select{font:inherit;color:var(--tx);background:var(--card);border:1px soli
 .dia-c.vis .n{background:var(--muted-bg)}
 .dia-c.feito .n{background:var(--ok);color:var(--pri-tx)}
 .dia-c.bloq .n{background:var(--er);color:var(--pri-tx)}
+.dia-c.evd .n{background:var(--am);color:var(--am-tx)}
 .dia-c.hoje .n{background:var(--pri);color:var(--pri-tx)}
 .dia-c.achou .n{box-shadow:0 0 0 3px var(--sel)}
 .dia-c .pts{display:flex;gap:3px;height:6px}
 .dia-c .pts i{width:6px;height:6px;border-radius:50%;background:var(--pri)}
-.dia-c .pts i.ev{background:var(--ev)}
+.dia-c .pts i.ev{background:var(--am)}
 .dia-c .pts i.ok{background:var(--ok)}
 .legenda{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--tx2);margin-top:14px}
 .legenda span{display:inline-flex;align-items:center;gap:6px}
@@ -106,7 +107,7 @@ dialog .dia{margin:0}
 <body>
 <header><div class="in">
   <h1>Roteiro de Mobilização</h1>
-  <span class="at">Somente visualização · atualizado em 26/11/2026 13:38</span>
+  <span class="at">Somente visualização · atualizado em 26/11/2026 13:51</span>
 </div></header>
 <main>
   <div class="barra">
@@ -130,11 +131,12 @@ dialog .dia{margin:0}
   <div id="agenda"></div>
   <div class="legenda" id="legenda">
     <span><b style="background:var(--pri)"></b>Hoje</span>
-    <span><b style="background:var(--er)"></b>Feriado / evento o dia todo</span>
+    <span><b style="background:var(--er)"></b>Feriado / sem atividade</span>
+    <span><b style="background:var(--am)"></b>Teatro / evento o dia todo</span>
     <span><b style="background:var(--ok)"></b>Roteiro realizado</span>
     <span><b style="background:var(--muted-bg);border:1px solid var(--linha)"></b>Com roteiro</span>
     <span><i style="background:var(--pri)"></i>roteiro pendente</span>
-    <span><i style="background:var(--ev)"></i>evento</span>
+    <span><i style="background:var(--am)"></i>evento</span>
     <span>· Clique num dia para ver as informações.</span>
   </div>
   <p class="dica">Esta página é só para consulta. As alterações são feitas no sistema do Roteiro de Mobilização.</p>
@@ -266,8 +268,10 @@ function desenharCal(q) {
     const k = iso(d), lst = itensDia(k), fer = D.feriados[k], fora = d.getMonth() !== m.getMonth();
     const ev = lst.filter(g => g.t === 'evento'), vis = nVisitas(lst), feitas = nVisitas(lst, 'REALIZADO');
     const bloq = ev.some(g => g.di);
+    // teatro/evento/campanha o dia todo = amarelo; feriado e sem atividade = vermelho
+    const evd = bloq && !fer && !ev.some(g => g.di && ['Feriado', 'Sem atividade'].includes(g.cat));
     const rasDia = [...new Set(lst.filter(g => g.t === 'visita' && g.ra).map(g => g.ra))].join(', ');
-    const estado_ = k === hojeIso ? 'hoje' : bloq ? 'bloq' : vis && feitas === vis ? 'feito' : vis ? 'vis' : '';
+    const estado_ = k === hojeIso ? 'hoje' : evd ? 'evd' : bloq ? 'bloq' : vis && feitas === vis ? 'feito' : vis ? 'vis' : '';
     const cls = [fora && 'fora', d.getDay() === 0 && 'dom', fer && 'fer', estado_,
                  q && !fora && lst.some(g => casa(g, q)) && 'achou'].filter(Boolean).join(' ');
     let resumo = d.toLocaleDateString('pt-BR') + (fer ? ` · ${fer}` : '') +
