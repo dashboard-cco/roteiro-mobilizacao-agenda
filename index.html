@@ -60,26 +60,34 @@ input,select{font:inherit;color:var(--tx);background:var(--card);border:1px soli
 .modo .btn{border:none;border-radius:0}
 .modo .btn.ativo{background:var(--pri);color:var(--pri-tx)}
 /* calendário */
-.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-.cal .cab{font-size:12px;color:var(--tx2);text-align:center;text-transform:uppercase;letter-spacing:.04em;padding:2px 0}
-.cel{background:var(--card);border:1px solid var(--linha);border-radius:10px;min-height:108px;padding:6px 7px;overflow:hidden;
-  display:flex;flex-direction:column;gap:3px;cursor:pointer;text-align:left;font:inherit;color:inherit;min-width:0}
-.cel:hover{border-color:var(--pri)}
-.cel:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
-.cel.fora{opacity:.45}
-.cel.fds{background:var(--muted-bg)}
-.cel.hoje{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri)}
-.cel.bloq{background:var(--ev-bg)}
-.cel.fer{background:var(--av-bg)}
-.cel.achou{box-shadow:0 0 0 2px var(--sel)}
-.cel .num{font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px}
-.cel .chip{font-size:11px;padding:1px 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-.cel .ra{font-size:12px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cel .prog{height:4px;border-radius:2px;background:var(--linha);overflow:hidden;margin-top:auto}
-.cel .prog i{display:block;height:100%;background:var(--ok)}
-.legenda{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--tx2);margin-top:10px}
-.legenda span{display:inline-flex;align-items:center;gap:5px}
-.legenda i{width:12px;height:12px;border-radius:3px;border:1px solid var(--linha);display:inline-block}
+.cal-wrap{max-width:640px;margin:0 auto}
+.cal-mes{margin:2px 0 10px;text-align:center;font-size:30px;font-weight:800;color:var(--pri)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);row-gap:6px;background:var(--card);border:1px solid var(--linha);
+  border-radius:16px;padding:14px 10px 16px}
+.cal .cab{text-align:center;font-weight:800;font-size:15px;padding:4px 0 8px}
+.cal .cab.dom{color:var(--er)}
+.dia-c{display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 0;background:none;border:none;
+  font:inherit;color:inherit;cursor:pointer;min-width:0}
+.dia-c[disabled]{cursor:default}
+.dia-c .n{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
+.dia-c:not([disabled]):hover .n{box-shadow:0 0 0 2px var(--pri)}
+.dia-c:focus-visible{outline:none}
+.dia-c:focus-visible .n{box-shadow:0 0 0 3px var(--pri)}
+.dia-c.dom .n,.dia-c.fer .n{color:var(--er)}
+.dia-c.fora .n{opacity:.25}
+.dia-c.vis .n{background:var(--muted-bg)}
+.dia-c.feito .n{background:var(--ok);color:var(--pri-tx)}
+.dia-c.bloq .n{background:var(--er);color:var(--pri-tx)}
+.dia-c.hoje .n{background:var(--pri);color:var(--pri-tx)}
+.dia-c.achou .n{box-shadow:0 0 0 3px var(--sel)}
+.dia-c .pts{display:flex;gap:3px;height:6px}
+.dia-c .pts i{width:6px;height:6px;border-radius:50%;background:var(--pri)}
+.dia-c .pts i.ev{background:var(--ev)}
+.dia-c .pts i.ok{background:var(--ok)}
+.legenda{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--tx2);margin-top:14px}
+.legenda span{display:inline-flex;align-items:center;gap:6px}
+.legenda b{width:16px;height:16px;border-radius:50%;display:inline-block}
+.legenda i{width:7px;height:7px;border-radius:50%;display:inline-block}
 dialog{border:none;border-radius:12px;padding:0;background:var(--card);color:var(--tx);width:min(760px,calc(100% - 24px));
   max-height:calc(100vh - 40px);box-shadow:0 10px 40px rgba(0,0,0,.25)}
 dialog::backdrop{background:rgba(0,0,0,.4)}
@@ -87,19 +95,18 @@ dialog .conteudo{padding:14px}
 .janela-cab{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .janela-cab h2{margin:0 auto 0 0;font-size:17px}
 dialog .dia{margin:0}
-@media (max-width:700px){
-  .cal{gap:3px}
-  .cel{min-height:58px;padding:4px;border-radius:8px}
-  .cel .num{font-size:13px}
-  .cel .num .chip,.cel .ra,.cel .chip.ev,.cel .chip.av,.cel .txt{display:none}
-  .cal .cab{font-size:10.5px}
+@media (max-width:520px){
+  .cal{padding:10px 4px 12px}
+  .cal-mes{font-size:24px}
+  .dia-c .n{width:38px;height:38px;font-size:16px}
+  .cal .cab{font-size:13px}
 }
 </style>
 </head>
 <body>
 <header><div class="in">
   <h1>Roteiro de Mobilização</h1>
-  <span class="at">Somente visualização · atualizado em 26/11/2026 08:30</span>
+  <span class="at">Somente visualização · atualizado em 26/11/2026 08:37</span>
 </div></header>
 <main>
   <div class="barra">
@@ -122,11 +129,13 @@ dialog .dia{margin:0}
   </div>
   <div id="agenda"></div>
   <div class="legenda" id="legenda">
-    <span><i style="background:var(--ev-bg)"></i>Evento de dia inteiro</span>
-    <span><i style="background:var(--av-bg)"></i>Feriado</span>
-    <span><i style="background:var(--muted-bg)"></i>Fim de semana</span>
-    <span><i style="background:var(--ok)"></i>Visitas realizadas</span>
-    <span>Clique num dia para ver as visitas.</span>
+    <span><b style="background:var(--pri)"></b>Hoje</span>
+    <span><b style="background:var(--er)"></b>Feriado / evento o dia todo</span>
+    <span><b style="background:var(--ok)"></b>Visitas realizadas</span>
+    <span><b style="background:var(--muted-bg);border:1px solid var(--linha)"></b>Com visitas</span>
+    <span><i style="background:var(--pri)"></i>visita pendente</span>
+    <span><i style="background:var(--ev)"></i>evento</span>
+    <span>· Clique num dia para ver as informações.</span>
   </div>
   <p class="dica">Esta página é só para consulta. As alterações são feitas no sistema do Roteiro de Mobilização.</p>
 </main>
@@ -218,30 +227,34 @@ function desenharLista(q) {
 }
 
 function desenharCal(q) {
-  const m = estado.mes, ini = segunda(m);
+  const m = estado.mes;
+  const ini = new Date(m); ini.setDate(1 - m.getDay());                 // domingo da 1ª semana
   const fim = new Date(m.getFullYear(), m.getMonth() + 1, 0);
-  fim.setDate(fim.getDate() + (7 - fim.getDay()) % 7);
-  $('periodo').textContent = `${MESES[m.getMonth()]} de ${m.getFullYear()}`;
-  let html = '<div class="cal">' + ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(n => `<div class="cab">${n}</div>`).join('');
+  fim.setDate(fim.getDate() + (6 - fim.getDay()));                      // sábado da última
+  $('periodo').textContent = '';
+  let html = `<div class="cal-wrap"><div class="cal-mes">${MESES[m.getMonth()]} de ${m.getFullYear()}</div><div class="cal">` +
+    ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((n, i) => `<div class="cab ${i ? '' : 'dom'}">${n}</div>`).join('');
   for (let d = new Date(ini); d <= fim; d.setDate(d.getDate()+1)) {
-    const k = iso(d), lst = itensDia(k), fer = D.feriados[k];
+    const k = iso(d), lst = itensDia(k), fer = D.feriados[k], fora = d.getMonth() !== m.getMonth();
     const ev = lst.filter(g => g.t === 'evento'), vis = nVisitas(lst), feitas = nVisitas(lst, 'REALIZADO');
     const bloq = ev.some(g => g.di);
     const rasDia = [...new Set(lst.filter(g => g.t === 'visita' && g.ra).map(g => g.ra))].join(', ');
-    const cls = [d.getMonth() !== m.getMonth() && 'fora', fds(d) && 'fds', k === hojeIso && 'hoje',
-                 bloq && 'bloq', fer && !bloq && 'fer', q && lst.some(g => casa(g, q)) && 'achou'].filter(Boolean).join(' ');
-    const evs = ev.filter(g => !(fer && g.cat === 'Feriado'));
-    html += `<button type="button" class="cel ${cls}" data-dia="${k}" aria-label="${d.toLocaleDateString('pt-BR')}: ${vis} visitas">
-      <span class="num">${d.getDate()}${k === hojeIso ? '<span class="chip hoje">Hoje</span>' : ''}</span>
-      ${fer ? `<span class="chip av" title="${esc(fer)}">${esc(fer)}</span>` : ''}
-      ${evs.slice(0, 2).map(g => `<span class="chip ev" title="${esc(g.end)}">${esc(g.cat || 'Evento')}${g.cat !== g.end ? ': ' + esc(g.end) : ''}</span>`).join('')}
-      ${evs.length > 2 ? `<span class="chip ev">+${evs.length - 2}</span>` : ''}
-      ${vis ? `<span class="chip ${feitas === vis ? 'ok' : ''}">${vis}<span class="txt"> visita${vis > 1 ? 's' : ''}</span></span>
-        ${rasDia ? `<span class="ra" title="${esc(rasDia)}">${esc(rasDia)}</span>` : ''}
-        <span class="prog" title="${feitas} de ${vis} realizadas"><i style="width:${Math.round(100 * feitas / vis)}%"></i></span>` : ''}
-    </button>`;
+    const estado_ = k === hojeIso ? 'hoje' : bloq ? 'bloq' : vis && feitas === vis ? 'feito' : vis ? 'vis' : '';
+    const cls = [fora && 'fora', d.getDay() === 0 && 'dom', fer && 'fer', estado_,
+                 q && !fora && lst.some(g => casa(g, q)) && 'achou'].filter(Boolean).join(' ');
+    let resumo = d.toLocaleDateString('pt-BR') + (fer ? ` · ${fer}` : '') +
+      ev.map(g => ` · ${g.cat}: ${g.end}`).join('') +
+      (vis ? ` · ${vis} visita${vis > 1 ? 's' : ''} (${feitas} realizada${feitas !== 1 ? 's' : ''})${rasDia ? ' · ' + rasDia : ''}` : '');
+    let pts = '';
+    if (!fora) {
+      pts = '<i></i>'.repeat(Math.min(vis - feitas, 3));
+      if (feitas && feitas < vis) pts += '<i class="ok"></i>';
+      if (ev.length && !bloq) pts += '<i class="ev"></i>';
+    }
+    html += `<button type="button" class="dia-c ${cls}" data-dia="${k}" title="${esc(resumo)}" aria-label="${esc(resumo)}" ${fora ? 'disabled' : ''}>
+      <span class="n">${d.getDate()}</span><span class="pts">${pts}</span></button>`;
   }
-  $('agenda').innerHTML = html + '</div>';
+  $('agenda').innerHTML = html + '</div></div>';
 }
 
 function abrirDia(k) {
@@ -251,7 +264,7 @@ function abrirDia(k) {
   $('fechar').onclick = () => $('dlgDia').close();
   $('dlgDia').showModal();
 }
-$('agenda').addEventListener('click', e => { const c = e.target.closest('.cel'); if (c) abrirDia(c.dataset.dia); });
+$('agenda').addEventListener('click', e => { const c = e.target.closest('.dia-c'); if (c && !c.disabled) abrirDia(c.dataset.dia); });
 $('dlgDia').addEventListener('click', e => { if (e.target === $('dlgDia')) $('dlgDia').close(); });
 
 function desenhar() {
