@@ -106,7 +106,7 @@ dialog .dia{margin:0}
 <body>
 <header><div class="in">
   <h1>Roteiro de Mobilização</h1>
-  <span class="at">Somente visualização · atualizado em 26/11/2026 09:07</span>
+  <span class="at">Somente visualização · atualizado em 26/11/2026 09:28</span>
 </div></header>
 <main>
   <div class="barra">
@@ -133,7 +133,7 @@ dialog .dia{margin:0}
     <span><b style="background:var(--er)"></b>Feriado / evento o dia todo</span>
     <span><b style="background:var(--ok)"></b>Visitas realizadas</span>
     <span><b style="background:var(--muted-bg);border:1px solid var(--linha)"></b>Com visitas</span>
-    <span><i style="background:var(--pri)"></i>visita pendente</span>
+    <span><i style="background:var(--pri)"></i>visitas pendentes</span>
     <span><i style="background:var(--ev)"></i>evento</span>
     <span>· Clique num dia para ver as informações.</span>
   </div>
@@ -247,9 +247,7 @@ function desenharCal(q) {
       (vis ? ` · ${vis} visita${vis > 1 ? 's' : ''} (${feitas} realizada${feitas !== 1 ? 's' : ''})${rasDia ? ' · ' + rasDia : ''}` : '');
     let pts = '';
     if (!fora) {
-      pts = '<i></i>'.repeat(Math.min(vis - feitas, 3));
-      if (feitas && feitas < vis) pts += '<i class="ok"></i>';
-      if (ev.length && !bloq) pts += '<i class="ev"></i>';
+      pts = vis > feitas ? '<i></i>' : ev.length && !bloq ? '<i class="ev"></i>' : '';
     }
     html += `<button type="button" class="dia-c ${cls}" data-dia="${k}" title="${esc(resumo)}" aria-label="${esc(resumo)}" ${fora ? 'disabled' : ''}>
       <span class="n">${d.getDate()}</span><span class="pts">${pts}</span></button>`;
