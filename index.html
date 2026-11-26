@@ -106,7 +106,7 @@ dialog .dia{margin:0}
 <body>
 <header><div class="in">
   <h1>Roteiro de Mobilização</h1>
-  <span class="at">Somente visualização · atualizado em 26/11/2026 09:28</span>
+  <span class="at">Somente visualização · atualizado em 26/11/2026 09:33</span>
 </div></header>
 <main>
   <div class="barra">
@@ -131,9 +131,9 @@ dialog .dia{margin:0}
   <div class="legenda" id="legenda">
     <span><b style="background:var(--pri)"></b>Hoje</span>
     <span><b style="background:var(--er)"></b>Feriado / evento o dia todo</span>
-    <span><b style="background:var(--ok)"></b>Visitas realizadas</span>
-    <span><b style="background:var(--muted-bg);border:1px solid var(--linha)"></b>Com visitas</span>
-    <span><i style="background:var(--pri)"></i>visitas pendentes</span>
+    <span><b style="background:var(--ok)"></b>Roteiro realizado</span>
+    <span><b style="background:var(--muted-bg);border:1px solid var(--linha)"></b>Com roteiro</span>
+    <span><i style="background:var(--pri)"></i>roteiro pendente</span>
     <span><i style="background:var(--ev)"></i>evento</span>
     <span>· Clique num dia para ver as informações.</span>
   </div>
@@ -171,6 +171,20 @@ function item(g) {
   const st = g.st === 'REALIZADO' ? '<span class="chip ok">Realizado</span> ' :
              g.st === 'CANCELADO' ? '<span class="chip er">Cancelado</span> ' : '';
   const obs = g.obs ? `<div class="obs">Obs.: ${esc(g.obs)}</div>` : '';
+  if (g.t === 'roteiro') {
+    const conv = g.conv.map(x => { const [c, r] = x.split('|'); return `<b>${esc(c)}</b>${r ? ' · ' + esc(r) : ''}`; }).join('; ');
+    const sel = g.sel.length ? g.sel.map(x => { const [c, r, cf] = x.split('|');
+        return `<b>${esc(c)}</b> · ${esc(r)} ${cf ? `<span class="chip ${CONF[cf] || ''}">${esc(cf)}</span>` : ''}`; }).join('; ')
+      : '<span class="t">sem seletiva neste local</span>';
+    const col = g.col.length ? `<span class="t">Coleta no dia</span><span>${g.col.map(c =>
+        `<span class="chip ${c === 'Conv. e Sel.' ? 'sel' : ''}">${esc(c)}</span>`).join(' ')}
+        ${g.comum.length ? `<span class="t"> · dias em comum: ${esc(g.comum.join(', '))}</span>` : ''}</span>` : '';
+    const cls = g.st === 'REALIZADO' ? 'feito' : g.st === 'CANCELADO' ? 'canc' : '';
+    return `<div class="item ${cls}"><div class="end">${st}${esc(g.ends.join('; '))}</div>
+      <div class="linha2"><span>RA <b>${esc(g.ra)}</b></span>${g.parcial ? '<span class="chip av">parte realizada</span>' : ''}</div>
+      <div class="serv"><span class="t">Convencional</span><span>${conv}</span>
+      <span class="t">Seletiva</span><span>${sel}</span>${col}</div>${obs}</div>`;
+  }
   if (g.t === 'evento') {
     return `<div class="item evento"><div><span class="chip ev">${esc(g.cat || 'Evento')}</span>
       ${g.di ? '<span class="chip ev">dia inteiro</span>' : ''} ${st}<span class="end">${esc(g.end)}</span></div>
@@ -202,14 +216,28 @@ const casa = (g, q) => [g.end,g.ra,g.circ,g.cat,g.obs,g.conv,g.sel].join(' ').to
 const nVisitas = (lst, so) => lst.filter(g => g.t === 'visita' && (!so || g.st === so)).reduce((s,g) => s + g.n, 0);
 const fds = d => d.getDay() === 0 || d.getDay() === 6;
 
+// um dia = um roteiro: as visitas do dia viram um só bloco (eventos continuam separados)
+function juntar(lst) {
+  const ev = lst.filter(g => g.t === 'evento'), v = lst.filter(g => g.t === 'visita');
+  if (!v.length) return ev;
+  const u = a => [...new Set(a.filter(Boolean))];
+  const sts = u(v.map(g => g.st || '-'));
+  return [...ev, {
+    t: 'roteiro', ends: u(v.map(g => g.end)), ra: u(v.map(g => g.ra)).join(', '),
+    conv: u(v.map(g => g.conv !== undefined ? `${g.conv}|${g.fconv} · ${g.tconv}` : `${g.circ}|`)),
+    sel: u(v.filter(g => g.sel).map(g => `${g.sel}|${g.fsel} · ${g.tsel}|${g.conf || ''}`)),
+    col: u(v.map(g => g.col)), comum: u(v.map(g => g.comum)),
+    st: sts.length === 1 && sts[0] !== '-' ? sts[0] : '', parcial: sts.length > 1,
+    obs: u(v.map(g => g.obs)).join(' · ')}];
+}
+
 function cartao(d, lst) {
-  const k = iso(d), vis = nVisitas(lst), fer = D.feriados[k];
+  const k = iso(d), fer = D.feriados[k];
   return `<section class="dia ${k === hojeIso ? 'hoje' : ''}"><div class="dia-cab">
     <span class="dt">${dd(d.getDate())} ${MES[d.getMonth()]}</span><span class="sem">${SEM[d.getDay()]}</span>
     ${k === hojeIso ? '<span class="chip hoje">Hoje</span>' : ''}
-    ${fer ? `<span class="chip av">${esc(fer)}</span>` : ''}
-    ${vis ? `<span class="chip">${vis} visita${vis > 1 ? 's' : ''}</span>` : ''}</div>
-    ${lst.length ? lst.map(item).join('') : `<div class="vazio">${fds(d) ? 'Fim de semana' : 'Sem visitas'}</div>`}</section>`;
+    ${fer ? `<span class="chip av">${esc(fer)}</span>` : ''}</div>
+    ${lst.length ? juntar(lst).map(item).join('') : `<div class="vazio">${fds(d) ? 'Fim de semana' : 'Sem visitas'}</div>`}</section>`;
 }
 
 function desenharLista(q) {
@@ -244,7 +272,7 @@ function desenharCal(q) {
                  q && !fora && lst.some(g => casa(g, q)) && 'achou'].filter(Boolean).join(' ');
     let resumo = d.toLocaleDateString('pt-BR') + (fer ? ` · ${fer}` : '') +
       ev.map(g => ` · ${g.cat}: ${g.end}`).join('') +
-      (vis ? ` · ${vis} visita${vis > 1 ? 's' : ''} (${feitas} realizada${feitas !== 1 ? 's' : ''})${rasDia ? ' · ' + rasDia : ''}` : '');
+      (vis ? ` · Roteiro${rasDia ? ': ' + rasDia : ''}${feitas === vis ? ' (realizado)' : feitas ? ' (parte realizada)' : ''}` : '');
     let pts = '';
     if (!fora) {
       pts = vis > feitas ? '<i></i>' : ev.length && !bloq ? '<i class="ev"></i>' : '';
